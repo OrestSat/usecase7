@@ -1,0 +1,743 @@
+generate test for my component using react-testing library 
+function MyFormComponent() {
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    agreeTerms: false,
+    gender: '',
+  });
+
+  const [errors, setErrors] = useState({});
+
+  const handleChange = e => {
+    const { name, value, type, checked } = e.target;
+    setForm(prevForm => ({
+      ...prevForm,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+
+  };
+
+  const handleSubmit = e => {
+    e.preventDefault();
+    // Perform some action here, such as sending the form data to an API 
+    console.log(form);
+  };
+
+  useEffect(() => {
+    let newErrors = {};
+    if (form.name.length < 3) newErrors.name = 'Name must be at least 3 characters.';
+    if (!form.email.includes('@')) newErrors.email = 'Email must be valid.';
+    if (!form.agreeTerms) newErrors.agreeTerms = 'You must agree to the terms.';
+    if (!form.gender) newErrors.gender = 'You must select a gender.';
+    setErrors(newErrors);
+  }, [form]);
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        name="name"
+        value={form.name}
+        onChange={handleChange}
+        placeholder="Name"
+      />
+      {errors.name && <p>{errors.name}</p>}
+      <input
+        type="email"
+        name="email"
+        value={form.email}
+        onChange={handleChange}
+        placeholder="Email"
+      />
+      {errors.email && <p>{errors.email}</p>}
+      <input
+        type="checkbox"
+        name="agreeTerms"
+        checked={form.agreeTerms}
+        onChange={handleChange}
+      /> Agree to Terms
+      {errors.agreeTerms && <p>{errors.agreeTerms}</p>}
+      <input
+        type="radio"
+        name="gender"
+        value="male"
+        checked={form.gender === "male"}
+        onChange={handleChange}
+      /> Male
+      <input
+        type="radio"
+        name="gender"
+        value="female"
+        checked={form.gender === "female"}
+        onChange={handleChange}
+      /> Female
+      {errors.gender && <p>{errors.gender}</p>}
+      <button type="submit">Submit</button>
+    </form>
+  );
+
+}
+
+export default MyFormComponent; 
+
+use mock function for console.log to test passed params . 
+Positive test cases. Make sure no errors on form
+
+Submit the form with all fields filled in correctly: a name of 3 or more characters, a valid email, 'Agree to Terms' checked, and a gender selected. 
+
+Submit the form with a very long valid name to check if the form can handle names of any length. 
+
+Submit the form with a complex email address that is valid (e.g., test.name+alias@example.co.uk) to test the robustness of the email validation. 
+
+Change the gender from male to female and submit the form with all other fields filled in correctly. 
+
+Re-submit the form after an initial successful submission with all fields filled in correctly. 
+
+*******************************
+
+To test the `MyFormComponent` using `react-testing-library`, you can follow the steps below. This test will use `jest` for assertions and will mock `console.log` to test the form's output.
+
+1. First, set up your testing environment. Install the required packages:
+```
+npm install @testing-library/react @testing-library/jest-dom @testing-library/user-event jest
+```
+
+2. Now, let's create a test file `MyFormComponent.test.js`:
+
+```jsx
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import MyFormComponent from './MyFormComponent'; // Path to your component
+
+beforeEach(() => {
+  // Mock the console.log
+  global.console.log = jest.fn();
+});
+
+test('submit the form with all fields filled correctly', () => {
+  render(<MyFormComponent />);
+
+  userEvent.type(screen.getByPlaceholderText('Name'), 'John Doe');
+  userEvent.type(screen.getByPlaceholderText('Email'), 'john@example.com');
+  userEvent.click(screen.getByLabelText('Agree to Terms'));
+  userEvent.click(screen.getByLabelText('Male'));
+
+  userEvent.click(screen.getByRole('button', { name: /submit/i }));
+
+  expect(console.log).toHaveBeenCalledWith({
+    name: 'John Doe',
+    email: 'john@example.com',
+    agreeTerms: true,
+    gender: 'male',
+  });
+  // Assert no errors are shown
+  expect(screen.queryByText(/error/i)).not.toBeInTheDocument();
+});
+
+test('submit the form with a very long valid name', () => {
+  render(<MyFormComponent />);
+
+  const longName = 'a'.repeat(100);
+  userEvent.type(screen.getByPlaceholderText('Name'), longName);
+  userEvent.type(screen.getByPlaceholderText('Email'), 'john@example.com');
+  userEvent.click(screen.getByLabelText('Agree to Terms'));
+  userEvent.click(screen.getByLabelText('Male'));
+
+  userEvent.click(screen.getByRole('button', { name: /submit/i }));
+
+  expect(console.log).toHaveBeenCalledWith({
+    name: longName,
+    email: 'john@example.com',
+    agreeTerms: true,
+    gender: 'male',
+  });
+});
+
+test('submit the form with a complex email address', () => {
+  render(<MyFormComponent />);
+
+  userEvent.type(screen.getByPlaceholderText('Name'), 'John Doe');
+  userEvent.type(screen.getByPlaceholderText('Email'), 'test.name+alias@example.co.uk');
+  userEvent.click(screen.getByLabelText('Agree to Terms'));
+  userEvent.click(screen.getByLabelText('Male'));
+
+  userEvent.click(screen.getByRole('button', { name: /submit/i }));
+
+  expect(console.log).toHaveBeenCalledWith({
+    name: 'John Doe',
+    email: 'test.name+alias@example.co.uk',
+    agreeTerms: true,
+    gender: 'male',
+  });
+});
+
+test('change gender and submit', () => {
+  render(<MyFormComponent />);
+
+  userEvent.type(screen.getByPlaceholderText('Name'), 'John Doe');
+  userEvent.type(screen.getByPlaceholderText('Email'), 'john@example.com');
+  userEvent.click(screen.getByLabelText('Agree to Terms'));
+  userEvent.click(screen.getByLabelText('Female'));
+
+  userEvent.click(screen.getByRole('button', { name: /submit/i }));
+
+  expect(console.log).toHaveBeenCalledWith({
+    name: 'John Doe',
+    email: 'john@example.com',
+    agreeTerms: true,
+    gender: 'female',
+  });
+});
+
+test('resubmit after an initial successful submission', () => {
+  render(<MyFormComponent />);
+
+  userEvent.type(screen.getByPlaceholderText('Name'), 'John Doe');
+  userEvent.type(screen.getByPlaceholderText('Email'), 'john@example.com');
+  userEvent.click(screen.getByLabelText('Agree to Terms'));
+  userEvent.click(screen.getByLabelText('Male'));
+
+  userEvent.click(screen.getByRole('button', { name: /submit/i }));
+  
+  userEvent.click(screen.getByRole('button', { name: /submit/i }));
+
+  expect(console.log).toHaveBeenCalledTimes(2);
+  expect(console.log).toHaveBeenCalledWith({
+    name: 'John Doe',
+    email: 'john@example.com',
+    agreeTerms: true,
+    gender: 'male',
+  });
+});
+```
+
+These tests should cover the positive test cases you've described for the `MyFormComponent`. Remember to run your tests using the `jest` command to see the results.
+
+**************************
+
+modify "Assert no errors are shown" section and check that no text from error object is displayed
+
+**************************
+
+To modify the "Assert no errors are shown" section to check that no text from the error object is displayed, you can be explicit about which error messages should not be present on the screen.
+
+Here's how you can update the test:
+
+```javascript
+// ... other imports and setup ...
+
+test('submit the form with all fields filled correctly', () => {
+  render(<MyFormComponent />);
+
+  userEvent.type(screen.getByPlaceholderText('Name'), 'John Doe');
+  userEvent.type(screen.getByPlaceholderText('Email'), 'john@example.com');
+  userEvent.click(screen.getByLabelText('Agree to Terms'));
+  userEvent.click(screen.getByLabelText('Male'));
+
+  userEvent.click(screen.getByRole('button', { name: /submit/i }));
+
+  expect(console.log).toHaveBeenCalledWith({
+    name: 'John Doe',
+    email: 'john@example.com',
+    agreeTerms: true,
+    gender: 'male',
+  });
+  
+  // Assert no errors are shown
+  expect(screen.queryByText('Name must be at least 3 characters.')).not.toBeInTheDocument();
+  expect(screen.queryByText('Email must be valid.')).not.toBeInTheDocument();
+  expect(screen.queryByText('You must agree to the terms.')).not.toBeInTheDocument();
+  expect(screen.queryByText('You must select a gender.')).not.toBeInTheDocument();
+});
+
+// ... other tests ...
+```
+
+By using `queryByText`, you can check whether each specific error message exists on the screen. If any of the error messages are found, the test will fail, indicating that there was an error displayed when it shouldn't have been.
+
+***************************
+
+why did you import fireEvent if you don't use it?
+
+***************************
+
+That was an oversight on my part, and I apologize for the confusion. You're right. In the tests provided, we're using `userEvent` for user interactions, which is often recommended over `fireEvent` as it provides a more realistic simulation of user interactions.
+
+You can safely remove the `fireEvent` import:
+
+```javascript
+import { render, screen } from '@testing-library/react';
+```
+
+Thank you for pointing it out!
+
+
+***************************
+
+modify tests to fix  Warning: An update to MyFormComponent inside a test was not wrapped in act(...).
+
+***************************
+
+The warning you're seeing (`An update to MyFormComponent inside a test was not wrapped in act(...)`) typically arises when state updates in your component are not properly wrapped within the `act` utility from `react-testing-library`. This utility ensures that all updates related to these actions are processed and applied before moving on with the test.
+
+When using `userEvent` or `fireEvent`, many times they internally use `act`, so you don't usually need to worry about it. However, sometimes asynchronous operations or effects can lead to this warning.
+
+Let's wrap the interactions and subsequent assertions in the `act` function to ensure all state updates are processed:
+
+```jsx
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { act } from 'react-dom/test-utils';
+import MyFormComponent from './MyFormComponent'; 
+
+beforeEach(() => {
+  global.console.log = jest.fn();
+});
+
+test('submit the form with all fields filled correctly', async () => {
+  render(<MyFormComponent />);
+
+  await act(async () => {
+    userEvent.type(screen.getByPlaceholderText('Name'), 'John Doe');
+    userEvent.type(screen.getByPlaceholderText('Email'), 'john@example.com');
+    userEvent.click(screen.getByLabelText('Agree to Terms'));
+    userEvent.click(screen.getByLabelText('Male'));
+    userEvent.click(screen.getByRole('button', { name: /submit/i }));
+  });
+
+  expect(console.log).toHaveBeenCalledWith({
+    name: 'John Doe',
+    email: 'john@example.com',
+    agreeTerms: true,
+    gender: 'male',
+  });
+  
+  expect(screen.queryByText('Name must be at least 3 characters.')).not.toBeInTheDocument();
+  expect(screen.queryByText('Email must be valid.')).not.toBeInTheDocument();
+  expect(screen.queryByText('You must agree to the terms.')).not.toBeInTheDocument();
+  expect(screen.queryByText('You must select a gender.')).not.toBeInTheDocument();
+});
+
+// ... similar changes for other tests ...
+```
+
+Note: Wrapping interactions in `act` becomes more crucial when you're dealing with asynchronous operations or when components use effects that update the state asynchronously. If your components don't have async operations, you might not always need to wrap every interaction in `act`, but it can be a good practice to ensure all state updates are captured.
+
+******************************
+
+'Name must be at least 3 characters.' -  is still in document
+
+******************************
+
+The warning you're getting is because the `useEffect` is causing an asynchronous update after the form is filled out. When the `useEffect` runs, it sets the error state based on the form data. However, our current assertions in the test are being checked before this effect has had a chance to run and update the component.
+
+To address this issue, we can utilize the `waitFor` utility from `@testing-library/react` to wait for the asynchronous updates to complete.
+
+Here's how you can modify the test:
+
+```javascript
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import MyFormComponent from './MyFormComponent'; 
+
+beforeEach(() => {
+  global.console.log = jest.fn();
+});
+
+test('submit the form with all fields filled correctly', async () => {
+  render(<MyFormComponent />);
+
+  userEvent.type(screen.getByPlaceholderText('Name'), 'John Doe');
+  userEvent.type(screen.getByPlaceholderText('Email'), 'john@example.com');
+  userEvent.click(screen.getByLabelText('Agree to Terms'));
+  userEvent.click(screen.getByLabelText('Male'));
+  userEvent.click(screen.getByRole('button', { name: /submit/i }));
+
+  await waitFor(() => {
+    expect(console.log).toHaveBeenCalledWith({
+      name: 'John Doe',
+      email: 'john@example.com',
+      agreeTerms: true,
+      gender: 'male',
+    });
+  });
+
+  // Since the effects have now had time to run, the following should be true:
+  expect(screen.queryByText('Name must be at least 3 characters.')).not.toBeInTheDocument();
+  expect(screen.queryByText('Email must be valid.')).not.toBeInTheDocument();
+  expect(screen.queryByText('You must agree to the terms.')).not.toBeInTheDocument();
+  expect(screen.queryByText('You must select a gender.')).not.toBeInTheDocument();
+});
+
+// ... similar changes for other tests ...
+```
+
+The `waitFor` function will wait until the callback function inside doesn't throw an error or until a timeout is reached. If the timeout is reached and the callback still throws an error, the test will fail. This will ensure the `useEffect` updates have been processed before the assertions are checked.
+
+****************************
+
+use change method instead of type for long name test case
+
+**************************
+
+Certainly! For longer strings, using the `change` method instead of `type` can be more efficient, as `type` simulates keystrokes one character at a time. Here's how you can update the test case to use the `change` method for the long name:
+
+```javascript
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import MyFormComponent from './MyFormComponent'; 
+
+beforeEach(() => {
+  global.console.log = jest.fn();
+});
+
+test('submit the form with a very long valid name', async () => {
+  render(<MyFormComponent />);
+
+  const longName = 'A'.repeat(200); // example long name of 200 characters
+  userEvent.paste(screen.getByPlaceholderText('Name'), longName); // using paste to simulate the change
+  userEvent.type(screen.getByPlaceholderText('Email'), 'john@example.com');
+  userEvent.click(screen.getByLabelText('Agree to Terms'));
+  userEvent.click(screen.getByLabelText('Male'));
+  userEvent.click(screen.getByRole('button', { name: /submit/i }));
+
+  await waitFor(() => {
+    expect(console.log).toHaveBeenCalledWith({
+      name: longName,
+      email: 'john@example.com',
+      agreeTerms: true,
+      gender: 'male',
+    });
+  });
+
+  // Check for absence of errors
+  expect(screen.queryByText('Name must be at least 3 characters.')).not.toBeInTheDocument();
+  expect(screen.queryByText('Email must be valid.')).not.toBeInTheDocument();
+  expect(screen.queryByText('You must agree to the terms.')).not.toBeInTheDocument();
+  expect(screen.queryByText('You must select a gender.')).not.toBeInTheDocument();
+});
+
+// ... other tests ...
+```
+
+In this example, we use the `paste` method from `userEvent` which essentially achieves the same as a direct `change` event. It's more representative of how users might enter a long string (e.g., by copying and pasting).
+
+*******************************
+
+Certainly! For longer strings, using the `change` method instead of `type` can be more efficient, as `type` simulates keystrokes one character at a time. Here's how you can update the test case to use the `change` method for the long name:
+
+```javascript
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import MyFormComponent from './MyFormComponent'; 
+
+beforeEach(() => {
+  global.console.log = jest.fn();
+});
+
+test('submit the form with a very long valid name', async () => {
+  render(<MyFormComponent />);
+
+  const longName = 'A'.repeat(200); // example long name of 200 characters
+  userEvent.paste(screen.getByPlaceholderText('Name'), longName); // using paste to simulate the change
+  userEvent.type(screen.getByPlaceholderText('Email'), 'john@example.com');
+  userEvent.click(screen.getByLabelText('Agree to Terms'));
+  userEvent.click(screen.getByLabelText('Male'));
+  userEvent.click(screen.getByRole('button', { name: /submit/i }));
+
+  await waitFor(() => {
+    expect(console.log).toHaveBeenCalledWith({
+      name: longName,
+      email: 'john@example.com',
+      agreeTerms: true,
+      gender: 'male',
+    });
+  });
+
+  // Check for absence of errors
+  expect(screen.queryByText('Name must be at least 3 characters.')).not.toBeInTheDocument();
+  expect(screen.queryByText('Email must be valid.')).not.toBeInTheDocument();
+  expect(screen.queryByText('You must agree to the terms.')).not.toBeInTheDocument();
+  expect(screen.queryByText('You must select a gender.')).not.toBeInTheDocument();
+});
+
+// ... other tests ...
+```
+
+In this example, we use the `paste` method from `userEvent` which essentially achieves the same as a direct `change` event. It's more representative of how users might enter a long string (e.g., by copying and pasting).
+
+****************************
+
+generete test for same component but for negative cases 
+Submit the form with the 'Name' field left blank. 
+
+Submit the form with an invalid email address (e.g., without the "@" symbol). 
+
+Submit the form without checking the 'Agree to Terms' checkbox. 
+
+Submit the form without selecting a gender. 
+
+Submit the form with a name that is less than 3 characters long. 
+
+make sure corresponding error message is present. check. wrap form interactions into act
+
+**************************
+
+Alright! Let's craft the negative test cases for the component. For each case, we'll fill out the form with the respective error scenario and then check for the presence of the corresponding error message.
+
+```javascript
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { act } from 'react-dom/test-utils';
+import MyFormComponent from './MyFormComponent'; 
+
+test("Submit the form with the 'Name' field left blank", async () => {
+  render(<MyFormComponent />);
+
+  await act(async () => {
+    userEvent.type(screen.getByPlaceholderText('Email'), 'test@example.com');
+    userEvent.click(screen.getByLabelText('Agree to Terms'));
+    userEvent.click(screen.getByLabelText('Male'));
+    userEvent.click(screen.getByRole('button', { name: /submit/i }));
+  });
+
+  expect(screen.getByText('Name must be at least 3 characters.')).toBeInTheDocument();
+});
+
+test("Submit the form with an invalid email address", async () => {
+  render(<MyFormComponent />);
+
+  await act(async () => {
+    userEvent.type(screen.getByPlaceholderText('Name'), 'John Doe');
+    userEvent.type(screen.getByPlaceholderText('Email'), 'testexample.com'); // Missing @ symbol
+    userEvent.click(screen.getByLabelText('Agree to Terms'));
+    userEvent.click(screen.getByLabelText('Male'));
+    userEvent.click(screen.getByRole('button', { name: /submit/i }));
+  });
+
+  expect(screen.getByText('Email must be valid.')).toBeInTheDocument();
+});
+
+test("Submit the form without checking the 'Agree to Terms' checkbox", async () => {
+  render(<MyFormComponent />);
+
+  await act(async () => {
+    userEvent.type(screen.getByPlaceholderText('Name'), 'John Doe');
+    userEvent.type(screen.getByPlaceholderText('Email'), 'test@example.com');
+    userEvent.click(screen.getByLabelText('Male'));
+    userEvent.click(screen.getByRole('button', { name: /submit/i }));
+  });
+
+  expect(screen.getByText('You must agree to the terms.')).toBeInTheDocument();
+});
+
+test("Submit the form without selecting a gender", async () => {
+  render(<MyFormComponent />);
+
+  await act(async () => {
+    userEvent.type(screen.getByPlaceholderText('Name'), 'John Doe');
+    userEvent.type(screen.getByPlaceholderText('Email'), 'test@example.com');
+    userEvent.click(screen.getByLabelText('Agree to Terms'));
+    userEvent.click(screen.getByRole('button', { name: /submit/i }));
+  });
+
+  expect(screen.getByText('You must select a gender.')).toBeInTheDocument();
+});
+
+test("Submit the form with a name that is less than 3 characters long", async () => {
+  render(<MyFormComponent />);
+
+  await act(async () => {
+    userEvent.type(screen.getByPlaceholderText('Name'), 'Jo');
+    userEvent.type(screen.getByPlaceholderText('Email'), 'test@example.com');
+    userEvent.click(screen.getByLabelText('Agree to Terms'));
+    userEvent.click(screen.getByLabelText('Male'));
+    userEvent.click(screen.getByRole('button', { name: /submit/i }));
+  });
+
+  expect(screen.getByText('Name must be at least 3 characters.')).toBeInTheDocument();
+});
+```
+
+Here, I've wrapped the form interactions in the `act` function to make sure all state and effects are being updated and applied correctly during the test.
+
+
+*****************************
+
+component is updated to next 
+import React, { useState, useEffect } from 'react';
+
+function MyFormComponent() {
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    agreeTerms: false,
+    gender: '',
+  });
+
+  const [errors, setErrors] = useState({});
+
+  const handleChange = e => {
+    const { name, value, type, checked } = e.target;
+    setForm(prevForm => ({
+      ...prevForm,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+
+  };
+
+  const handleSubmit = e => {
+    e.preventDefault();
+    // Perform some action here, such as sending the form data to an API 
+    console.log(form);
+  };
+
+  useEffect(() => {
+    let newErrors = {};
+    if (form.name.length < 3) newErrors.name = 'Name must be at least 3 characters.';
+    if (!form.email.includes('@')) newErrors.email = 'Email must be valid.';
+    if (!form.agreeTerms) newErrors.agreeTerms = 'You must agree to the terms.';
+    if (!form.gender) newErrors.gender = 'You must select a gender.';
+    setErrors(newErrors);
+  }, [form]);
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        name="name"
+        value={form.name}
+        onChange={handleChange}
+        placeholder="Name"
+      />
+      {errors.name && <p>{errors.name}</p>}
+      <input
+        type="email"
+        name="email"
+        value={form.email}
+        onChange={handleChange}
+        placeholder="Email"
+      />
+      {errors.email && <p>{errors.email}</p>}
+      <input
+        type="checkbox"
+        name="agreeTerms"
+        data-testid="agreeTerms"
+        checked={form.agreeTerms}
+        onChange={handleChange}
+      /> Agree to Terms
+      {errors.agreeTerms && <p>{errors.agreeTerms}</p>}
+      <input
+        type="radio"
+        name="gender"
+        value="male"
+        data-testid="male"
+        checked={form.gender === "male"}
+        onChange={handleChange}
+      /> Male
+      <input
+        type="radio"
+        data-testid="female"
+        name="gender"
+        value="female"
+        checked={form.gender === "female"}
+        onChange={handleChange}
+      /> Female
+      {errors.gender && <p>{errors.gender}</p>}
+      <button type="submit">Submit</button>
+    </form>
+  );
+
+}
+
+export default MyFormComponent; 
+
+**********************************
+
+
+Given the updated component with `data-testid` attributes, the negative test cases can be slightly modified for more specificity. Here are the negative tests based on the updated component:
+
+```javascript
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { act } from 'react-dom/test-utils';
+import MyFormComponent from './MyFormComponent'; 
+
+test("Submit the form with the 'Name' field left blank", async () => {
+  render(<MyFormComponent />);
+
+  await act(async () => {
+    userEvent.type(screen.getByPlaceholderText('Email'), 'test@example.com');
+    userEvent.click(screen.getByTestId('agreeTerms'));
+    userEvent.click(screen.getByTestId('male'));
+    userEvent.click(screen.getByRole('button', { name: /submit/i }));
+  });
+
+  expect(screen.getByText('Name must be at least 3 characters.')).toBeInTheDocument();
+});
+
+test("Submit the form with an invalid email address", async () => {
+  render(<MyFormComponent />);
+
+  await act(async () => {
+    userEvent.type(screen.getByPlaceholderText('Name'), 'John Doe');
+    userEvent.type(screen.getByPlaceholderText('Email'), 'testexample.com'); // Missing @ symbol
+    userEvent.click(screen.getByTestId('agreeTerms'));
+    userEvent.click(screen.getByTestId('male'));
+    userEvent.click(screen.getByRole('button', { name: /submit/i }));
+  });
+
+  expect(screen.getByText('Email must be valid.')).toBeInTheDocument();
+});
+
+test("Submit the form without checking the 'Agree to Terms' checkbox", async () => {
+  render(<MyFormComponent />);
+
+  await act(async () => {
+    userEvent.type(screen.getByPlaceholderText('Name'), 'John Doe');
+    userEvent.type(screen.getByPlaceholderText('Email'), 'test@example.com');
+    userEvent.click(screen.getByTestId('male'));
+    userEvent.click(screen.getByRole('button', { name: /submit/i }));
+  });
+
+  expect(screen.getByText('You must agree to the terms.')).toBeInTheDocument();
+});
+
+test("Submit the form without selecting a gender", async () => {
+  render(<MyFormComponent />);
+
+  await act(async () => {
+    userEvent.type(screen.getByPlaceholderText('Name'), 'John Doe');
+    userEvent.type(screen.getByPlaceholderText('Email'), 'test@example.com');
+    userEvent.click(screen.getByTestId('agreeTerms'));
+    userEvent.click(screen.getByRole('button', { name: /submit/i }));
+  });
+
+  expect(screen.getByText('You must select a gender.')).toBeInTheDocument();
+});
+
+test("Submit the form with a name that is less than 3 characters long", async () => {
+  render(<MyFormComponent />);
+
+  await act(async () => {
+    userEvent.type(screen.getByPlaceholderText('Name'), 'Jo');
+    userEvent.type(screen.getByPlaceholderText('Email'), 'test@example.com');
+    userEvent.click(screen.getByTestId('agreeTerms'));
+    userEvent.click(screen.getByTestId('male'));
+    userEvent.click(screen.getByRole('button', { name: /submit/i }));
+  });
+
+  expect(screen.getByText('Name must be at least 3 characters.')).toBeInTheDocument();
+});
+```
+
+Here, I've utilized the `data-testid` attributes to target specific elements in the component. This can be especially useful when the rendered markup is complex or contains similar elements, ensuring that the tests are selecting the correct elements.
+
