@@ -1,70 +1,57 @@
-# Getting Started with Create React App
+# README.md
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Test Description
 
-## Available Scripts
+We designed an extensive suite of test cases aimed at ensuring the robustness and functionality of a specific form. This form demands a range of inputs, such as name, email, agreement to terms, and gender selection. It is crucial that our form not only captures and processes valid data but also handles and reports invalid entries. Through these tests, we aim to cover a spectrum of typical user behaviors and edge cases to make sure that the form remains reliable and user-friendly.
 
-In the project directory, you can run:
+The tests have been divided into two categories: **Positive** and **Negative** test cases.
 
-### `npm start`
+## Test Cases Covered
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Positive Test Cases:
+1. **Standard Submission:** Submit the form with all fields filled correctly. This includes a name of 3 or more characters, a valid email, the 'Agree to Terms' option checked, and a gender selected.
+2. **Long Name Test:** Submit the form with an unusually long but valid name, ensuring the form handles names of any length.
+3. **Complex Email Test:** Submit with a complex email address that remains valid (e.g., test.name+alias@example.co.uk) to ascertain the robustness of email validation.
+4. **Gender Switch Test:** Change the gender from male to female and submit the form with all other fields correctly filled.
+5. **Re-submission Test:** After an initial successful submission, re-submit the form with all fields completed correctly.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Negative Test Cases:
+1. **Blank Name:** Submit the form leaving the 'Name' field blank.
+2. **Invalid Email:** Submit the form using an email address that's missing the "@" symbol.
+3. **Terms Disagreement:** Attempt submission without checking the 'Agree to Terms' checkbox.
+4. **Gender Omission:** Submit the form without selecting a gender.
+5. **Short Name Test:** Submit the form with a name that's less than 3 characters long.
 
-### `npm test`
+## Running Tests Locally
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Prerequisites:
+Ensure that you have `Node.js` and `npm` installed. If not, download and install them from [Node.js official website](https://nodejs.org/).
 
-### `npm run build`
+### Steps:
+1. **Clone the Repository:** 
+```
+git clone https://github.com/OrestSat/usecase7
+cd usecase7/my-app
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+2. **Install Dependencies:** 
+Before running tests, ensure you have all the required packages installed.
+```
+npm install
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+3. **Run All Tests:**
+With the React Testing Library set up in our project, you can easily execute all the tests using the following command:
+```
+npm test
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+This command initiates the Jest test runner provided by Create React App and automatically runs tests that have changes since the last commit. 
 
-### `npm run eject`
+4. **Run Tests for MyFormComponent:**
+To specifically run tests for `MyFormComponent`, use the following command:
+```
+npm test MyFormComponent.spec
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Remember to always keep your local repository updated and pull the latest changes before running tests to ensure you're testing the most recent version.
